@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+    <style>
+        * {
+            padding: 0;
+            margin: 0;
+        }
+
+        a {
+            text-decoration: none;
+            color: black;
+        }
+
+        #lhh::-webkit-scrollbar {
+            display: none;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="box">
+        <div style="width:40%; margin :0 auto;height:600px;">
+            <div style="display: flex; height:60px;line-height:60px;">
+                <div v-for="i in arr" style="flex:1;">
+                    <a :href="i.path">{{i.type}}</a>
+                </div>
+            </div>
+            <div>
+                <router-view></router-view>
+            </div>
+            <div style="text-align: center;border-top:1px solid #ccc;padding:20px 0 ">
+                <audio autoplay="" controls="" :src="url"></audio>
+            </div>
+        </div>
+    </div>
+    <!-- 搜索 -->
+    <template id="no1">
+        <div>
+            <div style="padding: 20px 20px;">
+                <input @keyup.enter="search" v-model="value" style="width:100%;" type="text">
+                <div style="overflow: hidden;height:70px;">
+                    <span style="padding: 5px 10px ;margin:3px 2px; font-size:14px;border:1px solid #ccc;float:left;"
+                        v-for="i in hotkey">{{i.k}}</span>
+                </div>
+                <div id="lhh" style="height:300px;overflow-y: scroll;">
+                    <a v-for="i in song_list" :href="'#/no5/'+i.songmid+'/'+i.songname">
+                        <p>{{i.songname}}</p>
+                    </a>
+                </div>
+            </div>
+
+        </div>
+
+    </template>
+    <template id="no2">
+        <div>
+            <div style="width: 100%;height: auto;overflow: hidden;margin-bottom: 20px" v-for="i in list">
+                <div style="float: left;width:30%;margin-right: 5px">
+                    <img :src="i.picUrl" alt="" style="width: 100%;height:100%;">
+                </div>
+                <div style="float: left;width: 65%;overflow: hidden;">
+                    <p style="margin-bottom: 10px">{{i.topTitle}}<a style="float: right"
+                            :href="'#/phblist/'+i.id">点击详情</a></p>
+                    <div v-for="a in i.songList">
+                        <p style="white-space: nowrap;overflow:hidden;">{{a.songname}}<span
+                                style="float: right;white-space: nowrap;overflow:hidden;">{{a.singername}}</span></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </template>
+    <template id="no3">
+
+    </template>
+    <!-- 歌手 -->
+    <template id="no4">
+        <div>
+            <div style="padding: 10px 5px;" v-for="i in list">
+                <a :href="'#/geshou/'+i.Fsinger_mid">
+                    {{i.Fsinger_name}}
+                </a>
+            </div>
+        </div>
+    </template>
+    <template id="no5">
+
+    </template>
+    <template id="phb">
+        <div>
+            <div v-for="i in list">
+                <p style="line-height: 50px;font-size:16px"><a
+                        :href="'#/no5/'+i.data.songmid+'/'+i.data.songname">{{i.data.songname}}<span
+                            style="float: right">{{i.data.singer[0].name}}</span></a></p>
+            </div>
+        </div>
+    </template>
+    <template id="geshou">
+        <div>
+            <div>
+                <p v-for="i in zzz">
+                    <a :href="'#/no5/'+i.musicData.songmid+'/'+i.musicData.songname">
+                        {{i.musicData.songname}}
+                    </a>
+                </p>
+
+            </div>
+        </div>
+    </template>
+</body>
+<script src="vue.js"></script>
+<script src="vue-resource.js"></script>
+<script src="vue-router.js"></script>
+<script>
+    var no1 = {
+        template: '#no1',
+        data() {
+            return {
+                value: '',
+                song_list: '',
+                song_url: '',
+                hotkey: '',
+            }
+        },
+        methods: {
+            search() {
+                this.$http.jsonp('https://c.y.qq.com/soso/fcgi-bin/client_search_cp?g_tk=5381&p=1&n=20&w=' + this.value + '&format=jsonp&jsonpCallback=callback&loginUin=0&hostUin=0&inCharset=utf8&outCharset=utf-8&notice=0&platform=yqq&needNewCode=0&remoteplace=txt.yqq.song&t=0&aggr=1&cr=1&catZhida=1&flag_qc=0', {
+                    jsonpCallback: 'callback'
+                }).then((data) => {
+                    console.log(data)
+                    this.song_list = data.data.data.song.list
+                })
+            },
+        },
+        created() {
+            this.$http.jsonp('https://c.y.qq.com/splcloud/fcgi-bin/gethotkey.fcg?g_tk=5381&uin=0&format=jsonp&jsonpCallback=callback&inCharset=utf-8&outCharset=utf-8&notice=0&platform=h5&needNewCode=1&_=1513317614040', {
+                jsonpCallback: 'callback'
+            }).then((data) => {
+                // console.log(data.data.data.hotkey)
+                this.hotkey = data.data.data.hotkey
+            })
+
+        },
+    }
+    var no2 = {
+        template: '#no2',
+        data() {
+            return {
+                list: ''
+            }
+        },
+        created() {
+            this.$http.jsonp('https://c.y.qq.com/v8/fcg-bin/fcg_myqq_toplist.fcg?g_tk=5381&uin=0&format=jsonp&jsonpCallback=callback&inCharset=utf-8&outCharset=utf-8&notice=0&platform=h5&needNewCode=1&_=1512554796112', {
+                jsonpCallback: 'callback'
+            }).then((data) => {
+                // console.log(data.data.data.topList)
+                this.list = data.data.data.topList
+            })
+
+        },
+    }
+    var no3 = {
+        template: '#no3'
+    }
+    var no4 = {
+        template: '#no4',
+        data() {
+            return {
+                list: ''
+            }
+        },
+        created() {
+            this.$http.jsonp('https://c.y.qq.com/v8/fcg-bin/v8.fcg?channel=singer&page=list&key=all_all_all&pagesize=100&pagenum=1&g_tk=5381&jsonpCallback=callback&loginUin=0&hostUin=0&format=jsonp&inCharset=utf8&outCharset=utf-8&notice=0&platform=yqq&needNewCode=0', {
+                jsonpCallback: 'callback'
+            }).then((data) => {
+                // console.log(data)
+                this.list = data.body.data.list
+            })
+
+        },
+    }
+    var geshou = {
+        template: '#geshou',
+        data() {
+            return {
+                zzz: ''
+            }
+        },
+        created() {
+            this.$http.jsonp('https://c.y.qq.com/v8/fcg-bin/fcg_v8_singer_track_cp.fcg?g_tk=5381&jsonpCallback=callback&loginUin=0&hostUin=0&format=jsonp&inCharset=utf8&outCharset=utf-8&notice=0&platform=yqq&needNewCode=0&singermid=' + this.$route.params.id + '&order=listen&begin=0&num=30&songstatus=1', {
+                jsonpCallback: 'callback'
+            }).then((data) => {
+                console.log(data.data.data.list)
+                this.zzz = data.body.data.list
+            })
+
+        },
+    }
+    var no5 = {
+        template: '#no5'
+    }
+    var phblist = {
+        template: '#phb',
+        data() {
+            return {
+                list: ''
+            }
+        },
+        created() {
+            this.$http.jsonp('https://c.y.qq.com/v8/fcg-bin/fcg_v8_toplist_cp.fcg?g_tk=5381&uin=0&format=jsonp&jsonpCallback=callback&inCharset=utf-8&outCharset=utf-8&notice=0&platform=h5&needNewCode=1&tpl=3&page=detail&type=top&topid=' + this.$route.params.id + '&_=1512563984096', {
+                jsonpCallback: 'callback'
+            }).then((data) => {
+                console.log(data.data.songlist)
+                this.list = data.data.songlist
+            })
+        },
+        watch: {
+            "$route.params.id"(a, b) {
+                this.$http.jsonp('https://c.y.qq.com/v8/fcg-bin/fcg_v8_toplist_cp.fcg?g_tk=5381&uin=0&format=jsonp&jsonpCallback=callback&inCharset=utf-8&outCharset=utf-8&notice=0&platform=h5&needNewCode=1&tpl=3&page=detail&type=top&topid=' + this.$route.params.id + '&_=1512563984096', {
+                    jsonpCallback: 'callback'
+                }).then((data) => {
+                    console.log(data.data.songlist.data)
+                    this.list = data.data.songlist
+                })
+            }
+        }
+    }
+    var routes = [{
+        path: '/',
+        component: no1
+    }, {
+        path: '/no2',
+        component: no2
+    }, {
+        path: '/no3',
+        component: no3
+    }, {
+        path: '/no4',
+        component: no4
+    }, {
+        path: '/no5/:songmid/:songname',
+        component: no5
+    }, {
+        path: '/phblist/:id',
+        component: phblist
+    }, {
+        path: '/geshou/:id',
+        component: geshou
+    }]
+    var router = new VueRouter({
+        routes
+    })
+    new Vue({
+        el: '#box',
+        router,
+        data: {
+            url: '',
+            arr: [{
+                type: '首页',
+                path: '#/'
+            }, {
+                type: '排行榜',
+                path: '#/no2'
+            }, {
+                type: '歌单',
+                path: '#/no3'
+            }, {
+                type: '歌手',
+                path: '#/no4'
+            }, {
+                type: '播放列表',
+                path: '#/no5'
+            }]
+        },
+        watch: {
+            "$route.params.songmid"(a, b) {
+                if (a) {
+                    if (a != 0) {
+                        this.$http.jsonp('https://c.y.qq.com/base/fcgi-bin/fcg_music_express_mobile3.fcg?g_tk=1278911659&hostUin=0&format=jsonp&callback=callback&inCharset=utf8&outCharset=utf-8&notice=0&platform=yqq&needNewCode=0&cid=205361747&uin=0&songmid=' + a + '&filename=C400' + a + '.m4a&guid=3655047200', {
+                            jsonpCallback: 'callback'
+                        }).then((data) => {
+                            var filename = data.body.data.items[0].filename
+                            var key = data.body.data.items[0].vkey
+                            this.url = `http://dl.stream.qqmusic.qq.com/${filename}?vkey=${key}&guid=3655047200&fromtag=66`
+
+                            console.log(this.url)
+                        })
+                    }
+                }
+            }
+        }
+    })
+</script>
+
+</html>
